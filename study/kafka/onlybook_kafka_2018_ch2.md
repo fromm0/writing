@@ -97,6 +97,7 @@ WantedBy=multi-user.target
 # 카프카 시작하기
 
 ## 카프카 토픽 생성
+
 ```
 bin/kafka-topics.sh --zookeeper dongguk-zk001:2181,dongguk-zk002:2181,dongguk-zk003:2181/dongguk-kafka --replication-factor 1 --partitions 1 --topic dongguk-topic --create
 ```
