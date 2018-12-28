@@ -1,6 +1,6 @@
 # 카프카, 데이터 플랫폼의 최강자 
 
-[카프카, 데이터 플랫폼의 최강자](https://bookthumb-phinf.pstatic.net/cover/135/400/13540082.jpg)
+![카프카, 데이터 플랫폼의 최강자](https://bookthumb-phinf.pstatic.net/cover/135/400/13540082.jpg)
 
 [책소개](https://book.naver.com/bookdb/book_detail.nhn?bid=13540082)
 
