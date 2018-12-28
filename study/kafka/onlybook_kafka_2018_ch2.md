@@ -90,7 +90,7 @@ WantedBy=multi-user.target
 
 ## TCP 포트확인
 - 주키퍼 기본포트 (2181), 카프카 기본포트 (9092)
-- netstat -ntlp | grep 2181 (또는 9092)
+- `netstat -ntlp | grep 2181 (또는 9092)`
 
 ## 주키퍼 지노드를 이용한 카프카 정보 확인
 - 주키퍼 CLI 를 사용 (zkCli.sh 명령어)
