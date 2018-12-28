@@ -13,17 +13,20 @@
   - 지노드 : 데이터를 저장하기 위한 공간
   - 앙상블 (클러스터) : 호스트 세트, 과반수 기존의 노드 체크
 - zoo.cfg
-  - ```tickTime=2000
+```
+tickTime=2000
 initLimit=10
 syncLimit=5
 dataDir=/home1/irteam/data
 clientPort=2181
 server.1=dev-dongguk-zk001-ncl:2888:3888
 server.2=dev-dongguk-zk002-ncl:2888:3888
-server.3=dev-dongguk-zk003-ncl:2888:3888```
+server.3=dev-dongguk-zk003-ncl:2888:3888
+```
 
 - zookeeper-server.service
-  - ```[Unit]
+```
+[Unit]
 Description=zookeeper-server
 After=network.target
 
@@ -39,7 +42,8 @@ ExecStart=/home1/irteam/apps/zookeeper/bin/zkServer.sh start
 ExecStop=/home1/irteam/apps/zookeeper/bin/zkServer.sh stop
 
 [Install]
-WantedBy=multi-user.target```
+WantedBy=multi-user.target
+```
 
 - 주키퍼의 세션 타임아웃은 노드에 동작중인 자바 애플리케이션의 풀GC등의 시간을 고려해서 충분한 시간(3초 이상)을 잡아주는게 좋다.  
 
@@ -59,7 +63,8 @@ WantedBy=multi-user.target```
 ## 카프카 실행
 - 백그라운드 실행을 위해 & 나 -daemon옵션을 사용하자
 - systemd관련 kafka-server.service 파일
-- ``` [Unit]
+``` 
+[Unit]
 Description=kafka-server
 After=network.target
 
@@ -75,7 +80,8 @@ ExecStart=/home1/irteam/apps/kafka/bin/kafka-server-start.sh /home1/irteam/apps/
 ExecStop=/home1/irteam/apps/kafka/bin/kafka-server-stop.sh
 
 [Install]
-WantedBy=multi-user.target```
+WantedBy=multi-user.target
+```
 
 # 카프카 상태확인
 
