@@ -3,6 +3,9 @@
 
 @import "{{ site.theme }}";
 
+body {
+  font-family: "나눔고딕", NanumGothic, "맑은고딕", "Malgun Gothic", Helvetica, "돋움", dotum, sans-serif;
+}
 .wrapper {
   max-width: 80%;
 }
