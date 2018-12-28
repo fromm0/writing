@@ -137,6 +137,8 @@ public class KafkaBookConsumer1 {
                 // 무한루프 형태로 계속 폴링처리
                 // https://kafka.apache.org/0101/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html#poll(long)
                 ConsumerRecords<String, String> records = consumer.poll(100);
+                // poll 메소드는 레코드 전체 (토픽, 파티션, 오프셋, 키, 값 등)를 리턴 
+                // 실제 N개의 메시지를 반복문을 통해 처리해야 함
                 for (ConsumerRecord<String, String> record : records) {
                     System.out.printf("Topic: %s, Parition: %s, Offset: %d, Key: %s, Value: %s\n"
                             , record.topic(), record.partition(), record.offset(), record.key(), record.value());
@@ -145,6 +147,7 @@ public class KafkaBookConsumer1 {
         } catch (Exception e) {
             e.toString();
         } finally {
+            // 컨슈머를 종료하기 전에 close()메소드를 호출
             consumer.close();
         }
     }
@@ -153,6 +156,103 @@ public class KafkaBookConsumer1 {
 // javac -classpath .:/home1/irteam/apps/kafka/libs/kafka-clients-1.0.0.jar KafkaBookConsumer1.java 
 // java -classpath .:/home1/irteam/apps/kafka/libs/kafka-clients-1.0.0.jar:/home1/irteam/apps/kafka/libs/log4j-1.2.17.jar:/home1/irteam/apps/kafka/libs/slf4j-api-1.7.25.jar:/home1/irteam/apps/kafka/libs/slf4j-log4j12-1.7.25.jar KafkaBookConsumer1
 ```
+
+# 파티션과 메시지 순서
+
+- 리플리케이션 팩터는 다르게 설정해도 되지만 파티션 수는 동일하게 토픽 생성해야 함
+
+#### 테스트로 사용할 토픽을 만들어보자
+
+```
+./kafka-topics.sh --zookeeper dev-dongguk-zk001-ncl:2181,dev-dongguk-zk002-ncl:2181,dev-dongguk-zk003-ncl:2181/dongguk-kafka --topic dongguk-01 --partitions 3 --replication-factor 1 --create
+
+# 출력결과
+# Created topic "dongguk-01".
+```
+
+## 파티션 3개로 구성한 dongguk토픽과 메시지 순서
+
+- dongguk-01 토픽
+  - 파티션 수가 3
+  - 리플리케이션 팩터는 1
+
+#### dongguk-01토픽을 메시지를 보내보자
+
+```
+./kafka-console-producer.sh --broker-list dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 --topic dongguk-01
+
+# 출력결과
+# > a
+# ... 중략
+# > e
+```
+
+#### dongguk-01토픽에 보낸 메시지를 받아보자. 
+
+```
+./kafka-console-consumer.sh --bootstrap-server dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 --topic dongguk-01 --from-beginning
+
+# 출력결과
+# a
+# d
+# b
+# e
+# c
+```
+
+- 메시지 전송시 a부터 e까지 순서대로 보냈지만 수신된 순서는 다소 다를수 있음
+
+#### 토픽의 파티션별로 저장된 메시지를 확인해보자. 
+
+- kafka-console-consumer.sh명령어에 --partition파라미터를 추가하면 파티션별 메시지를 확인할수 있음 
+
+```
+./kafka-console-consumer.sh --bootstrap-server dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 --topic dongguk-01 --partition 0 --from-beginning
+
+# 출력결과
+# c
+# f
+# i
+# l
+# o
+# r
+```
+
+```
+./kafka-console-consumer.sh --bootstrap-server dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 --topic dongguk-01 --partition 1 --from-beginning
+
+# 출력결과
+# b
+# e
+# h
+# k
+# n
+# q
+# t
+```
+
+```
+./kafka-console-consumer.sh --bootstrap-server dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 --topic dongguk-01 --partition 2 --from-beginning
+
+# 출력결과
+# a
+# d
+# g
+# j
+# m
+# p
+# s
+```
+
+
+
+
+
+
+
+
+
+
 
 
 
