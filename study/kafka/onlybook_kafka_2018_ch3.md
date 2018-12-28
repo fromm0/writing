@@ -68,7 +68,7 @@ Topic:dongguk-topic     PartitionCount:1        ReplicationFactor:2     Configs:
 # leader의 3 (2번 파티션)이 리더, Replicas의 3, 1중에서 3이 리더이니 1이 팔로워
 ```
 
-||토픽 사이즈||리플리케이션 팩터||카프카 클러스터내 필요 저장소 크기||
+|토픽 사이즈|리플리케이션 팩터|카프카 클러스터내 필요 저장소 크기|
 |100GB|1|100GB|
 |100GB|2|200GB|
 |100GB|3|300GB|
