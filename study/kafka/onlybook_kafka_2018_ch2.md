@@ -20,8 +20,7 @@ dataDir=/home1/irteam/data
 clientPort=2181
 server.1=dev-dongguk-zk001-ncl:2888:3888
 server.2=dev-dongguk-zk002-ncl:2888:3888
-server.3=dev-dongguk-zk003-ncl:2888:3888
-```
+server.3=dev-dongguk-zk003-ncl:2888:3888```
 
 - zookeeper-server.service
   - ```[Unit]
@@ -40,8 +39,7 @@ ExecStart=/home1/irteam/apps/zookeeper/bin/zkServer.sh start
 ExecStop=/home1/irteam/apps/zookeeper/bin/zkServer.sh stop
 
 [Install]
-WantedBy=multi-user.target
-```
+WantedBy=multi-user.target```
 
 - 주키퍼의 세션 타임아웃은 노드에 동작중인 자바 애플리케이션의 풀GC등의 시간을 고려해서 충분한 시간(3초 이상)을 잡아주는게 좋다.  
 
@@ -77,8 +75,7 @@ ExecStart=/home1/irteam/apps/kafka/bin/kafka-server-start.sh /home1/irteam/apps/
 ExecStop=/home1/irteam/apps/kafka/bin/kafka-server-stop.sh
 
 [Install]
-WantedBy=multi-user.target
-```
+WantedBy=multi-user.target```
 
 # 카프카 상태확인
 
