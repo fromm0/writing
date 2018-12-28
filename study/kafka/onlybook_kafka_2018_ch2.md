@@ -13,6 +13,7 @@
   - 지노드 : 데이터를 저장하기 위한 공간
   - 앙상블 (클러스터) : 호스트 세트, 과반수 기존의 노드 체크
 - zoo.cfg
+
 ```
 tickTime=2000
 initLimit=10
@@ -25,6 +26,7 @@ server.3=dev-dongguk-zk003-ncl:2888:3888
 ```
 
 - zookeeper-server.service
+
 ```
 [Unit]
 Description=zookeeper-server
@@ -63,6 +65,7 @@ WantedBy=multi-user.target
 ## 카프카 실행
 - 백그라운드 실행을 위해 & 나 -daemon옵션을 사용하자
 - systemd관련 kafka-server.service 파일
+
 ``` 
 [Unit]
 Description=kafka-server
