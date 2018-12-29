@@ -159,6 +159,9 @@ public class KafkaBookConsumer1 {
 
 # 파티션과 메시지 순서
 
+> [Kafka 운영자가 말하는 처음 접하는 Kafka](https://www.popit.kr/kafka-%EC%9A%B4%EC%98%81%EC%9E%90%EA%B0%80-%EB%A7%90%ED%95%98%EB%8A%94-%EC%B2%98%EC%9D%8C-%EC%A0%91%ED%95%98%EB%8A%94-kafka/) 참고
+> - "파티션 수에 따른 메시지 순서" 절에도 동일한 설명이 있음
+
 - 리플리케이션 팩터는 다르게 설정해도 되지만 파티션 수는 동일하게 토픽 생성해야 함
 
 #### 테스트로 사용할 토픽을 만들어보자
@@ -243,6 +246,90 @@ public class KafkaBookConsumer1 {
 # p
 # s
 ```
+
+- 동일 파티션내에서는 프로듀서가 생성한 순서와 동일하게 처리, 파티션과 파티션 사이에서는 순서 보장안됨
+
+## 파티션 1개로 구성한 dongguk-02토픽과 메시지 순서
+
+메시지 순서를 정확히 보장하기 위해서는 파티션 수를 1로 지정해서 사용해야 함
+
+```
+./kafka-topics.sh --zookeeper dev-dongguk-zk001-ncl:2181,dev-dongguk-zk002-ncl:2181,dev-dongguk-zk003-ncl:2181/dongguk-kafka --topic dongguk-02 --partitions 1 --replication-factor 1 --create
+
+# 출력결과
+# Created topic "dongguk-02".
+```
+
+```
+./kafka-console-producer.sh --broker-list dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 --topic dongguk-02
+
+# 출력결과
+# > a
+# ... 중략
+# > e
+```
+
+```
+./kafka-console-consumer.sh --bootstrap-server dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 --topic dongguk-02 --from-beginning
+
+# 출력결과
+# a
+# b
+# c
+# d
+# e
+```
+
+- 파티션 3인 dongguk-01 의 결과와 달리 메시지가 순서대로 출력됨
+
+```
+./kafka-console-consumer.sh --bootstrap-server dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 --topic dongguk-02 --partition 0 --from-beginning
+
+# 출력결과
+# a
+# b
+# c
+# d
+# e
+```
+
+- 파티션이 1개라 0번째 파티션의 메시지 내용을 확인해보더라도 출력된 결과와 동일하게 순서대로 들어있음
+- 메시지를 순서대로 처리하기 위해서는 파티션을 1개만 사용해야 하지만 성능이 떨어짐
+- 성능을 위해서는 대부분 파티션을 여러개 사용하지만 이 경우 메시지의 완전한 순서 보장은 어려움
+
+# 컨슈머 그룹
+
+- 컨슈머 그룹은 하나의 토픽에 여러 컨슈머 그룹이 동시에 접속해 메시지를 가져올수 있음
+- 컨슈머 그룹은 컨슈머를 확장하는게 가능
+- 프로듀서가 메시지를 더 빨리 생성하고 컨슈머가 그 만큼 처리를 못하는 경우 컨슈머 그룹을 통해 컨슈머를 확장하면 처리량이 증가함
+
+**그림5-4**
+
+- dongguk-01 토픽의 파티션 수는 3으로 구성된 토픽
+- 메시지는 컨슈머 01이 처리 중
+- 메시지 생성이 많아 dongguk-01 토픽에 메시지가 계속 쌓인다면
+
+**그림5-5**
+
+- 컨슈머 그룹내에서 컨슈머들은 메시지를 가져오고 있는 토픽의 파티션에 소유권을 공유
+- 컨슈머가 부족해 처리가 늦다면 동일 컨슈머 그룹 아이디를 지정해서 컨슈머를 추가해야 함
+- 기존 컨슈머 01이 파티션 1,2,3의 소유권을 가지고 있었음
+- 컨슈머 02, 03이 추가되면서 컨슈머 02는 파티션 2, 컨슈머 03은 파티션 3을 가져가서 처리하는데 이렇게 소유권이 이동하는 것을 리밸런스(rebalance)라고 함
+- 컨슈머 그룹내에서는 리밸런스를 통해 컨슈머를 안전하게 추가및 삭제가 가능함
+
+- 리밸런스의 단점
+  - 리밸런스하는 동안 일시적으로 컨슈머가 메시지를 가져가지 못함
+  - 즉 리밸런스 시간동안 컨슈머 그룹 전체를 일시적으로 사용할수 없을수 있음
+
+- 토픽내 파티션 수보다 컨슈머 그룹내 컨슈머 수가 많을 경우 (**그림 5-6**)
+  - 토픽의 파티션에는 하나의 컨슈머만 연결가능
+  - 즉 컨슈머 그룹내 컨슈머가 더 많은 경우 나머지는 동작하지 않을 수 있음
+
+- 컨슈머 그룹내 컨슈머를 추가해도 메시지 처리가 늦다면
+  - 컨슈머 추가와 함께 파티션도 추가해야 함
+
+
+
 
 
 
