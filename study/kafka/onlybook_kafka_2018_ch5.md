@@ -1,6 +1,6 @@
  
 
-# 컨슈머 주요 옵션
+# 5.1. 컨슈머 주요 옵션
 
 - 컨슈머 종류 (주키퍼 사용 여부에 따라 구분)
   - 올드 컨슈머 (Old Consumer) : 컨슈머의 오프셋을 주키퍼의 지노드에 저장
@@ -44,7 +44,7 @@
   - fetch.max.wait.ms
     - fetch.min.bytes 에 의해 설정된 데이터보다 적은 경우 요청에 응답을 기다리는 최대 시간
 
-# 콘솔 컨슈머로 메시지 가져오기
+# 5.2. 콘솔 컨슈머로 메시지 가져오기
 컨슈머는 토픽에서 메시지를 가져옴
 
 ```
@@ -55,7 +55,7 @@
 ./kafka-console-consumer.sh --bootstrap-server dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 --topic dongguk-topic --group dongguk-consumer-group --from-beginning
 ```
 
-# 자바와 파이썬을 이용한 컨슈머
+# 5.3. 자바와 파이썬을 이용한 컨슈머
 
 ```
 import org.apache.kafka.clients.producer.Callback;
@@ -157,7 +157,7 @@ public class KafkaBookConsumer1 {
 // java -classpath .:/home1/irteam/apps/kafka/libs/kafka-clients-1.0.0.jar:/home1/irteam/apps/kafka/libs/log4j-1.2.17.jar:/home1/irteam/apps/kafka/libs/slf4j-api-1.7.25.jar:/home1/irteam/apps/kafka/libs/slf4j-log4j12-1.7.25.jar KafkaBookConsumer1
 ```
 
-# 파티션과 메시지 순서
+# 5.4. 파티션과 메시지 순서
 
 > [Kafka 운영자가 말하는 처음 접하는 Kafka](https://www.popit.kr/kafka-%EC%9A%B4%EC%98%81%EC%9E%90%EA%B0%80-%EB%A7%90%ED%95%98%EB%8A%94-%EC%B2%98%EC%9D%8C-%EC%A0%91%ED%95%98%EB%8A%94-kafka/) 참고
 > - "파티션 수에 따른 메시지 순서" 절에도 동일한 설명이 있음
@@ -173,7 +173,7 @@ public class KafkaBookConsumer1 {
 # Created topic "dongguk-01".
 ```
 
-## 파티션 3개로 구성한 dongguk토픽과 메시지 순서
+## 5.4.1. 파티션 3개로 구성한 dongguk토픽과 메시지 순서
 
 - dongguk-01 토픽
   - 파티션 수가 3
@@ -249,7 +249,7 @@ public class KafkaBookConsumer1 {
 
 - 동일 파티션내에서는 프로듀서가 생성한 순서와 동일하게 처리, 파티션과 파티션 사이에서는 순서 보장안됨
 
-## 파티션 1개로 구성한 dongguk-02토픽과 메시지 순서
+## 5.4.2. 파티션 1개로 구성한 dongguk-02토픽과 메시지 순서
 
 메시지 순서를 정확히 보장하기 위해서는 파티션 수를 1로 지정해서 사용해야 함
 
@@ -297,7 +297,7 @@ public class KafkaBookConsumer1 {
 - 메시지를 순서대로 처리하기 위해서는 파티션을 1개만 사용해야 하지만 성능이 떨어짐
 - 성능을 위해서는 대부분 파티션을 여러개 사용하지만 이 경우 메시지의 완전한 순서 보장은 어려움
 
-# 컨슈머 그룹
+# 5.5. 컨슈머 그룹
 
 - 컨슈머 그룹은 하나의 토픽에 여러 컨슈머 그룹이 동시에 접속해 메시지를 가져올수 있음
 - 컨슈머 그룹은 컨슈머를 확장하는게 가능
@@ -382,8 +382,9 @@ public class KafkaBookConsumer1 {
 public class KafkaBookConsumerMO {
   public static void main(String[] args) {
     Properties props = new Properties();
-    props.put("bootstrap.servers", "peter-kafka001:9092,peter-kafka002:9092,peter-kafka003:9092");
+    props.put("bootstrap.servers", "dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092");
     props.put("group.id", "peter-manual");
+    // 수동커밋을 위해 false로 지정
     props.put("enable.auto.commit", "false");
     props.put("auto.offset.reset", "latest");
     props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
@@ -391,9 +392,63 @@ public class KafkaBookConsumerMO {
     KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
     consumer.subscribe(Arrays.asList("peter-topic"));
     while (true) {
+      // polll 을 호출해 토픽으로 부터 메시지를 가져옴
       ConsumerRecords<String, String> records = consumer.poll(100);
-      for (ConsumerRecord<String, String> record : records)
-      {
+      for (ConsumerRecord<String, String> record : records) {
+        System.out.printf("Topic: %s, Partition: %s, Offset: %d, Key: %s, Value: %s\n", record.topic(), record.partition(), record.offset(), record.key(), record.value());
+      }
+      try {
+        // 메시지를 모두 가져와서 처리 후 commitSync를 호출해서 커밋
+        consumer.commitSync();
+      } catch (CommitFailedException e) {
+        System.out.printf("commit failed", e);
+      }
+    }
+  }
+}
+```
+
+- 부가적인 작업이 더 많은 경우 commitSync()메소드 호출앞에 코드를 넣어서 처리를 해야 함
+- 수동커밋도 중복 발생여지는 남아있음
+  - 메시지를 가져온 후 처리하는 과정에서 다른 컨슈머가 가져갈 경우 희박하지만 중복처리 가능성이 있음
+- 즉 카프카에서는 어떤 경우는 중복처리의 가능성은 가지고 있는 셈이지만 대신 적어도 한번은 반드시 실행한다는 점도 보장이 됨
+
+## 5.6.3. 특정 파티션 할당
+
+- 대개 컨슈머는 토픽을 구독(subscribe)하고 카프카가 컨슈머 그룹의 컨슈머에게 직접 파티션을 할당하는 형태
+- 특정 파티션을 임의 제거하고 싶은 경우
+  - 키-값 형태로 파티션에 저장되어 있고 특정 파티션에 대한 메시지만 가져와야 할 경우
+  - 컨슈머 프로세스가 가용성이 높은 구성인 경우, 카프카가 컨슈머의 실패를 감지하고 재조정할 필요없고 자동으로 컨슈머 프로세스가 다른 시스템에서 재시작되는 경우 
+
+**예제 5-4 특정 파티션에서만 메시지를 가져오는 consumer-partition.java파일**
+
+```
+import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.common.TopicPartition;
+
+import java.util.Arrays;
+import java.util.Properties;
+
+public class KafkaBookConsumerPart {
+  public static void main(String[] args) {
+    Properties props = new Properties();
+    props.put("bootstrap.servers", "dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092");
+    props.put("group.id", "peter-partition");
+    props.put("enable.auto.commit", "false");
+    props.put("auto.offset.reset", "latest");
+    props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+    props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+    KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
+    // 토픽을 구독하지 않고 문자열로 전달
+    String topic = "dongguk-topic";
+    // 토픽의 파티션을 정의
+    TopicPartition partition0 = new TopicPartition(topic, 0);
+    TopicPartition partition1 = new TopicPartition(topic, 1);
+    // 배열로 파티션0, 파티션1을 할당
+    consumer.assign(Arrays.asList(partition0, partition1));
+    while (true) {
+      ConsumerRecords<String, String> records = consumer.poll(100);
+      for (ConsumerRecord<String, String> record : records) {
         System.out.printf("Topic: %s, Partition: %s, Offset: %d, Key: %s, Value: %s\n", record.topic(), record.partition(), record.offset(), record.key(), record.value());
       }
       try {
@@ -404,22 +459,42 @@ public class KafkaBookConsumerMO {
     }
   }
 }
+```  
+
+- 예제 5-4는 dongguk-topic에서 파티션0, 1만 할당해서 메시지를 가져오는 예제
+- 이런 경우 컨슈머 인스턴스마다 컨슈머 그룹 아이디를 서로 다르게 설정해야 함
+  - 잘못하면 오프셋 정보를 공유해서 의도치않은 결과로 처리가 될수 있음
+
+## 5.6.4. 특정 오프셋부터 메시지 가져오기
+
+```
+TopicPartition partition0 = new TopicPartition(topic, 0);
+TopicPartition partition1 = new TopicPartition(topic, 1);
+
+consumer.assign(Arrays.asList(partition0, partition1));
+consumer.seek(partition0, 2);
+consumer.seek(partition1, 2);
+
+while (true) {
+  ConsumerRecords<String, String> records = consumer.poll(100);
 ```
 
+- 수동으로 특정 오프셋부터 메시지를 가져오기 위해서는 seek() 메소드를 사용하면 됨
+
+# 참고자료
+
+[Kafka 운영자가 말하는 Kafka Consumer Group](https://www.popit.kr/kafka-consumer-group/)
+
+
+# 메모
+
 토픽 목록과 토픽별 파티션 수
+- 파티션 웹 콘솔등에서 확인가능
+
 컨슈머 그룹 목록과 컨슈머 그룹별 컨슈머 수
-
-
-
-
-
-
-
-
-
-
-
-
-
+- 컨슈머그룹목록 
+  - bin/kafka-consumer-groups.sh  --list --bootstrap-server localhost:9092
+  - bin/kafka-consumer-groups.sh --describe --group mygroup --bootstrap-server localhost:9092
+- 
 
 
