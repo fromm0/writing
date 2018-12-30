@@ -321,15 +321,93 @@ public class KafkaBookConsumer1 {
   - 리밸런스하는 동안 일시적으로 컨슈머가 메시지를 가져가지 못함
   - 즉 리밸런스 시간동안 컨슈머 그룹 전체를 일시적으로 사용할수 없을수 있음
 
-- 토픽내 파티션 수보다 컨슈머 그룹내 컨슈머 수가 많을 경우 (**그림 5-6**)
+- 토픽내 파티션 수보다 컨슈머 그룹내 컨슈머 수가 많을 경우 (**그림 5-6*1*)
   - 토픽의 파티션에는 하나의 컨슈머만 연결가능
   - 즉 컨슈머 그룹내 컨슈머가 더 많은 경우 나머지는 동작하지 않을 수 있음
 
 - 컨슈머 그룹내 컨슈머를 추가해도 메시지 처리가 늦다면
   - 컨슈머 추가와 함께 파티션도 추가해야 함
 
+- 컨슈머가 컨슈머 그룹내 멤버로 유지되고 파티션을 계속 유지하기 위해서는 하트비트를 보냄
+  - 하트비트는 곧 잘 처리하고 있다는 신호의 일종
+  - poll 할때와 메시지의 오프셋을 커밋할때 보냄
+  - 오랜시간동안 하트비트를 보내지 않으면 해당 컨슈머가 다운되었다고 보고 리밸런스를 시도함
+  
+**그림 5-8** 
 
+- 컨슈머 03은 파티션 2, 3의 메시지를 가져와서 처리 중
+- 컨슈머 01, 02에 비해서는 더 많은 메시지를 처리해야 하나 상황에 따라서는 안정적으로 동작할수도 있음
+- 지속적인 모니터링을 통해 처리가 늦어지면 컨슈머를 추가해야 함
 
+**그림 5-9**
+
+- 카프카는 컨슈머가 메시지를 가져가도 삭제되지 않아서 하나의 토픽을 여러목적으로 사용가능
+- 그림 5-9는 하나의 토픽을 두개 이상의 컨슈머 그룹이 메시지를 가져가는 형태로 활용하는 모습
+  - 컨슈머 그룹마다 각자의 오프셋을 별도로 관리하기 때문에 가능
+  - 컨슈머 그룹 아이디는 중복되지 않도록 관리해야 함
+  
+# 5.6. 커밋과 오프셋
+
+- 컨슈머가 poll()을 호출할때마다 읽지 않은 메시지를 가져옴
+- 컨슈머 그룹의 컨슈머는 각각의 파티션에 가져간 메시지 위치 정보(오프셋)을 기록함
+- 각 파티션에 메시지 현재 위치를 표시하는 행위를 커밋(commit) 이라고 명명  
+- 오프셋 정보를 별도로 저장하기 위한 저장소가 필요함
+  - 올드 카프카 컨슈머(0.9이전)는 주키퍼에 저장
+  - 뉴 카프카 컨슈머(0.9이후)는 카프카 내부 저장 (_consumer_offsets)
+- 리밸런스 후 
+  - 마지막 오프셋이 실제 처리된 것보다 크다면 그 사이 메시지는 누락된다.
+  - 마지막 오프셋이 실제 처리된 것보다 작다면 메시지는 중복 처리된다. 
+
+## 5.6.1. 자동커밋
+
+- 자동커밋은 컨슈머를 다루는 사용자가 오프셋 관리를 직접하지 않아도 되는 방법
+- 자동커밋을 활성화하려면 `enable.auto.commit=true` 로 설정하면 5초마다 poll()를 호출할때마다 마지막 오프셋을 커밋
+- 5초 주기는 기본값이고 `auto.commit.internal.ms` 옵션을 사용해서 변경가능 
+
+**그림 5-10**
+
+**그림 5-11**
+
+- 자동커밋을 주의해야 할 사항으로는 커밋 주기 이전에 리밸런스가 일어나는 경우이다. 
+- 그림 5-11처럼 오프셋 4에서 커밋이 된 이후 리밸런스 되고나면 다시 5, 6을 가져온다. 
+- 하지만 5, 6은 리밸런스 직전 이미 컨슈머가 가져간 이후라 중복으로 처리될수 있다. 
+
+## 5.6.2. 수동커밋
+
+- 수동커밋은 메시지 처리가 완료될때까지 메시지를 가져온 것으로 간주되어서는 안되는 경우 사용
+
+**예제 5-3 수동으로 커밋을 하는 consumer-manual.java 파일**
+
+```
+public class KafkaBookConsumerMO {
+  public static void main(String[] args) {
+    Properties props = new Properties();
+    props.put("bootstrap.servers", "peter-kafka001:9092,peter-kafka002:9092,peter-kafka003:9092");
+    props.put("group.id", "peter-manual");
+    props.put("enable.auto.commit", "false");
+    props.put("auto.offset.reset", "latest");
+    props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+    props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+    KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
+    consumer.subscribe(Arrays.asList("peter-topic"));
+    while (true) {
+      ConsumerRecords<String, String> records = consumer.poll(100);
+      for (ConsumerRecord<String, String> record : records)
+      {
+        System.out.printf("Topic: %s, Partition: %s, Offset: %d, Key: %s, Value: %s\n", record.topic(), record.partition(), record.offset(), record.key(), record.value());
+      }
+      try {
+        consumer.commitSync();
+      } catch (CommitFailedException e) {
+        System.out.printf("commit failed", e);
+      }
+    }
+  }
+}
+```
+
+토픽 목록과 토픽별 파티션 수
+컨슈머 그룹 목록과 컨슈머 그룹별 컨슈머 수
 
 
 
