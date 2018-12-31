@@ -6,4 +6,5 @@
 
 1. [2장 : 카프카와 주키퍼 설치](https://fromm0.github.io/writing/study/kafka/onlybook_kafka_2018_ch2)
 1. [3장 : 카프카 디자인](https://fromm0.github.io/writing/study/kafka/onlybook_kafka_2018_ch3)
+1. [4장 : 카프카 프로듀서](https://fromm0.github.io/writing/study/kafka/onlybook_kafka_2018_ch4)
 1. [5장 : 카프카 컨슈머](https://fromm0.github.io/writing/study/kafka/onlybook_kafka_2018_ch5)
