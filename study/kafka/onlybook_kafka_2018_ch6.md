@@ -50,6 +50,7 @@
 ## 6.1.4. 토픽 설정 변경
 
 - 운영중인 카프카의 디스크 공간을 확보하는 가장 좋은 방법은 디스크 공간을 많이 차지하는 토픽의 보관주기를 줄여주는 방법
+- 다음은 보관주기를 1시간으로 줄이는 명령어
 
 ```
 ./kafka-configs.sh \
@@ -63,11 +64,74 @@
 # Completed Updating config for entity: topic 'dongguk-topic'.
 ```
 
+- --add-config로 추가한 설정을 삭제하려면 --delete-config를 사용
 
+```
+./kafka-configs.sh \
+--zookeeper dongguk-zk001:2181,dongguk-zk002:2181,dongguk-zk003:2181/dongguk-kafka \
+--alter \
+--entity-type topics \
+--entity-name dongguk-topic \
+--delete-config retention.ms
 
+# 출력결과
+# Completed Updating config for entity: topic 'dongguk-topic'.
+```
 
+### 6.1.5. 토픽의 파티션수 변경
 
+- 토픽의 파티션 수는 증가는 가능하지만 감소는 불가능
+- 파티션은 늘리면 메시지 순서에 영향이 있을수 있음
 
+```
+./kafka-topics.sh \ 
+--zookeeper dongguk-zk001:2181,dongguk-zk002:2181,dongguk-zk003:2181/dongguk-kafka \ 
+--alter \
+--topic dongguk-topic \
+--partitions 2
+
+# 출력결과
+# Adding partitions succeeded!
+```
+
+- 파티션 추가 후 정보를 출력해보면 1번 파티션 정보가 추가로 출력됨
+
+```
+./kafka-topics.sh \ 
+--zookeeper dongguk-zk001:2181,dongguk-zk002:2181,dongguk-zk003:2181/dongguk-kafka \ 
+--topic dongguk-topic \
+--describe
+
+# 출력결과
+# Topic:dongguk-topic     PartitionCount:2        ReplicationFactor:1     Configs:
+#           Topic: dongguk-topic    Partition: 0    Leader: 1       Replicas: 1 Isr: 1
+#           Topic: dongguk-topic    Partition: 1    Leader: 2       Replicas: 2 Isr: 2
+```
+
+## 6.1.6. 토픽의 리플리케이션 팩터 변경
+
+- 리플리케이션 팩터를 변경하기 위해 json형식의 파일이 필요함
+
+```
+{"version":1,
+"partitions":[
+    {"topic":"dongguk-topic","partition":0,"replicas":[1,2]}
+    {"topic":"dongguk-topic","partition":1,"replicas":[2,3]}    
+]}
+```
+
+- 파티션 0의 복제수는 2 (replicas의 숫자 1, 2가 2개) 이고 리더는 1, 2 의 순서기준으로 브로커1 이 리더이고 브로커2가 리플리카
+- 파티션 1은 복제수가 2이고 브로커2가 리더, 브로커3이 리플리카 
+- 리더는 변경되지 않도록 현재 토픽의 리더정보를 확인해서 그대로 설정해야 함
+
+```
+./kafka-reassign-partitions.sh \
+--zookeeper dongguk-zk001:2181,dongguk-zk002:2181,dongguk-zk003:2181/dongguk-kafka \
+--reassignment-json-file rf.json \
+--execute
+
+# 출력결과
+```
 
 
 
