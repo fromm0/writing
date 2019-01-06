@@ -195,3 +195,65 @@ dongguk-topic 0 8 8 0 - - -
 - 특정 파티션에만 LAG이 증가한다면 파티션에 연결된 컨슈머에 문제가 없는지 확인 필요
 
 # 6.2. 주키퍼의 스케일 아웃
+
+- 주키퍼 서버를 3대에서 5대로 확장
+- dongguk-zk004, dongguk-zk005
+- zoo.cfg
+
+```
+tickTime=2000
+initLimit=10
+syncLimit=5
+dataDir=/home1/irteam/data
+clientPort=2181
+server.1=dev-dongguk-zk001-ncl:2888:3888
+server.2=dev-dongguk-zk002-ncl:2888:3888
+server.3=dev-dongguk-zk003-ncl:2888:3888
+server.4=dev-dongguk-zk004-ncl:2888:3888
+server.5=dev-dongguk-zk005-ncl:2888:3888
+```
+
+**그림 6-2** 주키퍼 확장을 위해 dongguk-zk004, dongguk-zk005만 추가한 상태
+
+- 기존에 사용하던 dongguk-zk001 ~ dongguk-zk003 은 설정파일 수정 후 재시작을 통해 반영해야함
+- 주키퍼 앙상블의 리더가 변경될 경우 문제가 발생할 수 있어서 리더는 가장 마지막에 작업을 하는 것을 권장
+- 서버별로 주키퍼 리더인지 확인해야 함 (Mode값이 leader인 서버)
+
+```
+./zkServer.sh status
+
+# 출력결과
+# ZooKeeper JMX enabled by default
+# Using config /zookeeper/conf/zoo.cfg
+# Mode : follower (또는 leader)
+```
+
+```
+systemctl restart zookeeper-server.service
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
