@@ -131,15 +131,67 @@
 --execute
 
 # 출력결과
+# Current partition replica assignment
+# Successfully started reassignment of partitions
 ```
 
+```
+./kafka-topics.sh \ 
+--zookeeper dongguk-zk001:2181,dongguk-zk002:2181,dongguk-zk003:2181/dongguk-kafka \ 
+--topic dongguk-topic \
+--describe
 
+# 출력결과
+# Topic:dongguk-topic     PartitionCount:2        ReplicationFactor:2     Configs:
+#           Topic: dongguk-topic    Partition: 0    Leader: 1       Replicas: 1,2 Isr: 1,2
+#           Topic: dongguk-topic    Partition: 1    Leader: 2       Replicas: 2,3 Isr: 2,3
+```
 
+- ReplicationFactor가 2로 변경됨
+- 각 파티션마다 replicas가 숫자가 1개였던 것들이 2개로 늘어남
 
+## 6.1.7. 컨슈머 그룹 목록 확인
 
+#### 오프셋 저장방식에 따른 컨슈머 구분 방법
+- 올드 컨슈머 : 오프셋을 주키퍼에 저장
+  - -zookeeper와 주키퍼 목록 입력 필요
+- 뉴 컨슈머 : 오프셋을 카프카의 토픽에 저장
+  - --bootstrap-server와 브로커 목록 입력 필요
 
+```  
+./kafka-consumer-groups.sh \
+--bootstrap-server dongguk-kafka001:9092,dongguk-kafka002:9092,dongguk-kafka003:9092 \
+--list
 
+# 출력결과
+# dongguk-consumer
+```
 
+- --bootstrap-server 옵션을 사용했기 때문에 주키퍼 기반이 아닌 컨슈머만 보임
 
+## 6.1.8. 컨슈머 상태와 오프셋 확인
 
+```  
+./kafka-consumer-groups.sh \
+--bootstrap-server dongguk-kafka001:9092,dongguk-kafka002:9092,dongguk-kafka003:9092 \
+--group dongguk-consumer
+--describe
 
+# 출력결과
+# Consumer group 'dongguk-consumer' has no active members.
+
+TOPIC PARTITION CURRENT-OFFSET  LOG-END-OFFSET  LAG CONSUMER-ID HOST  CLIENT-ID
+dongguk-topic 1 2 2 0 - - - 
+dongguk-topic 0 8 8 0 - - - 
+```
+
+- dongguk-consumer는 종료된 상태, 현재 활성화된 멤버가 없다는 정보와 상세 정보 확인가능
+- dongguk-topic 파티션 1번은 현재 오프셋은 2, 마지막 오프셋도 2, LAG는 0
+- dongguk-topic 파티션 2번은 현재 오프셋은 8, 마지막 오프셋도 8, LAG는 0
+
+**그림 6-1** LAG=0과 LAG=5의 차이
+
+- LAG이 계속 증가하는 경우라면 컨슈머 처리가 늦어지고 있는 상황. 컨슈머나 파티셔을 늘려서 대응
+- 특정 파티션에만 LAG이 증가한다면 파티션에 연결된 컨슈머에 문제가 없는지 확인 필요
+
+# 6.2. 주키퍼의 스케일 아웃
