@@ -228,9 +228,114 @@ server.5=dev-dongguk-zk005-ncl:2888:3888
 # Mode : follower (또는 leader)
 ```
 
+**그림 6-3** zoo.cfg설정 변경 후 peter-zk001만 주키퍼를 재시작한 상태
+
 ```
 systemctl restart zookeeper-server.service
 ```
+
+**그림 6-4** zoo.cfg설정 변경 후 peter-zk001 ~ 003까지 주키퍼를 재시작한 상태
+
+```
+echo mntr | nc localhost 2181 | grep zk_syncd_followers
+
+# 출력결과
+# zk_syncd_followers 4
+```
+
+- 주키퍼 앙상블은 모두 5대
+- 리더 1대, 팔로우 4대로 출력결과가 4라면 정상
+
+# 6.3. 카프카 스케일 아웃
+
+- 카프카 스케일 아웃 방법
+  - 새롭게 추가하는 서버의 카프카 설정파일의 broker.id 만 다른 서버와 겹치지 않게 설정 후 실행
+
+```
+./kafka-topics.sh \
+--zookeeper dongguk-zk001:2181,dongguk-zk002:2181,dongguk-zk003:2181/dongguk-kafka \
+--replication-factor 2 \
+--partitions 5 \
+--topic dongguk5 \
+--create
+
+# 출력결과
+# Created topic "dongguk5".
+```
+
+- dongguk-zk004, dongguk-zk005 서버를 추가
+- 각 서버의 server.properties 파일의 broker.id 값을 순서대로 4, 5로 수정 후 카프카 서비스 시작
+- 주키퍼 cli를 통한 확인 (4, 5가 추가된 것을 확인가능)
+
+```
+[zk: localhost:2181(CONNECTED) 0] ls /
+
+# 출력결과
+# [zookeeper, dongguk-kafka]
+
+[zk: localhost:2181(CONNECTED) 1] ls /dongguk-kafka/brokers/ids
+
+# 출력결과
+# [1, 2, 3, 4, 5]
+```
+
+```
+./kafka-topics.sh \ 
+--zookeeper dongguk-zk001:2181,dongguk-zk002:2181,dongguk-zk003:2181/dongguk-kafka \ 
+--topic dongguk5 \
+--describe
+
+# 출력결과
+# Topic:dongguk5     PartitionCount:5        ReplicationFactor:2     Configs:
+#           Topic: dongguk5    Partition: 0    Leader: 2       Replicas: 2,1 Isr: 2,1
+#           Topic: dongguk5    Partition: 1    Leader: 3       Replicas: 3,2 Isr: 3,2
+#           Topic: dongguk5    Partition: 2    Leader: 1       Replicas: 1,3 Isr: 1,3
+#           Topic: dongguk5    Partition: 3    Leader: 2       Replicas: 2,3 Isr: 2,3
+#           Topic: dongguk5    Partition: 4    Leader: 3       Replicas: 3,1 Isr: 3,1
+```
+
+- 새로운 브로커 4, 5가 추가되기전 생성한 토픽이라 브로커 1, 2, 3에만 분산되어 있음
+- 브로커 4, 5도 사용하도록 파티션 분산 작업 진행 (partition.json)
+
+```
+{"version":1,
+"partitions":[
+    {"topic":"dongguk5","partition":0,"replicas":[2,1]}
+    {"topic":"dongguk5","partition":1,"replicas":[3,2]}    
+    {"topic":"dongguk5","partition":2,"replicas":[4,3]}    
+    {"topic":"dongguk5","partition":3,"replicas":[5,4]}    
+    {"topic":"dongguk5","partition":4,"replicas":[1,5]}    
+]}
+```
+
+```
+./kafka-reassign-partitions.sh \
+--zookeeper dongguk-zk001:2181,dongguk-zk002:2181,dongguk-zk003:2181/dongguk-kafka \
+--reassignment-json-file partition.json \
+--execute
+
+# 출력결과
+# Current partition replica assignment
+# Successfully started reassignment of partitions
+```
+
+# 6.4. 카프카 모니터링
+
+## 6.4.1. 카프카 JMX 설정 방법
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

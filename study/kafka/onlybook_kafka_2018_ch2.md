@@ -102,19 +102,32 @@ WantedBy=multi-user.target
 ## 카프카 토픽 생성
 
 ```
-bin/kafka-topics.sh --zookeeper dongguk-zk001:2181,dongguk-zk002:2181,dongguk-zk003:2181/dongguk-kafka --replication-factor 1 --partitions 1 --topic dongguk-topic --create
+./kafka-topics.sh \
+--zookeeper dongguk-zk001:2181,dongguk-zk002:2181,dongguk-zk003:2181/dongguk-kafka \
+--replication-factor 1 \
+--partitions 1 \
+--topic dongguk-topic \
+--create
 ```
 
 ```
-bin/kafka-topics.sh --zookeeper dongguk-zk001:2181,dongguk-zk002:2181,dongguk-zk003:2181/dongguk-kafka --topic dongguk-topic --delete
+./kafka-topics.sh \
+--zookeeper dongguk-zk001:2181,dongguk-zk002:2181,dongguk-zk003:2181/dongguk-kafka \
+--topic dongguk-topic \
+--delete
 ```
 
 ```
-bin/kafka-console-producer.sh --broker-list dongguk-kafka001:9092,dongguk-kafka002:9092,dongguk-kafka003:9092 --topic dongguk-topic
+./kafka-console-producer.sh \
+--broker-list dongguk-kafka001:9092,dongguk-kafka002:9092,dongguk-kafka003:9092 \
+--topic dongguk-topic
 ```
 
 ```
-bin/kafka-console-consumer.sh --bootstrap-server dongguk-kafka001:9092,dongguk-kafka002:9092,dongguk-kafka003:9092 --topic dongguk-topic --from-beginning
+./kafka-console-consumer.sh \
+--bootstrap-server dongguk-kafka001:9092,dongguk-kafka002:9092,dongguk-kafka003:9092 \
+--topic dongguk-topic \
+--from-beginning
 ```
 
 # 참고사이트
