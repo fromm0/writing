@@ -97,8 +97,8 @@ public class KafkaBookProducer1 {
     }
 }
 
-// javac -classpath .:/home1/irteam/apps/kafka/libs/kafka-clients-1.0.0.jar KafkaBookProducer1.java 
-// java -classpath .:/home1/irteam/apps/kafka/libs/kafka-clients-1.0.0.jar:/home1/irteam/apps/kafka/libs/log4j-1.2.17.jar:/home1/irteam/apps/kafka/libs/slf4j-api-1.7.25.jar:/home1/irteam/apps/kafka/libs/slf4j-log4j12-1.7.25.jar KafkaBookProducer1
+// javac -classpath .:[kafka설치디렉토리]/libs/kafka-clients-1.0.0.jar KafkaBookProducer1.java 
+// java -classpath .:[kafka설치디렉토리]/libs/kafka-clients-1.0.0.jar:[kafka설치디렉토리]/libs/log4j-1.2.17.jar:[kafka설치디렉토리]/libs/slf4j-api-1.7.25.jar:[kafka설치디렉토리]/libs/slf4j-log4j12-1.7.25.jar KafkaBookProducer1
 ```
 
 ```
@@ -151,8 +151,8 @@ public class KafkaBookConsumer1 {
     }
 }
  
-// javac -classpath .:/home1/irteam/apps/kafka/libs/kafka-clients-1.0.0.jar KafkaBookConsumer1.java 
-// java -classpath .:/home1/irteam/apps/kafka/libs/kafka-clients-1.0.0.jar:/home1/irteam/apps/kafka/libs/log4j-1.2.17.jar:/home1/irteam/apps/kafka/libs/slf4j-api-1.7.25.jar:/home1/irteam/apps/kafka/libs/slf4j-log4j12-1.7.25.jar KafkaBookConsumer1
+// javac -classpath .:[kafka설치디렉토리]/libs/kafka-clients-1.0.0.jar KafkaBookConsumer1.java 
+// java -classpath .:[kafka설치디렉토리]/libs/kafka-clients-1.0.0.jar:[kafka설치디렉토리]/libs/log4j-1.2.17.jar:[kafka설치디렉토리]/libs/slf4j-api-1.7.25.jar:[kafka설치디렉토리]/libs/slf4j-log4j12-1.7.25.jar KafkaBookConsumer1
 ```
 
 # 5.4. 파티션과 메시지 순서

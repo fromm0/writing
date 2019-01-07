@@ -204,7 +204,7 @@ dongguk-topic 0 8 8 0 - - -
 tickTime=2000
 initLimit=10
 syncLimit=5
-dataDir=/home1/irteam/data
+dataDir=/data
 clientPort=2181
 server.1=dev-dongguk-zk001-ncl:2888:3888
 server.2=dev-dongguk-zk002-ncl:2888:3888
@@ -323,13 +323,36 @@ echo mntr | nc localhost 2181 | grep zk_syncd_followers
 
 ## 6.4.1. 카프카 JMX 설정 방법
 
+- JMX 활성화 방법
+  - 카프카 실행 파일에 JMX관련 설정을 추가하는 방법
+  - systemd를 이용한 환경변수 추가방법
 
+#### 카프카 실행 파일에 JMX관련 설정을 추가하는 방법
 
+- kafka-server-start.sh 파일에 다음 설정 추가
 
+```
+export JMX_PORT=9999
+if [ $# -lt 1 ];
+then
+    echo "USAGE: $0 [-daemon] server.properties [--override property=value]*"
+    exit 1
+fi    
+```
 
+#### systemd를 이용한 환경변수 추가방법
 
+- [kafka설치디렉토리]/config/jmx 파일 생성
 
+```
+JMX_PORT=9999
+```
 
+- systemd관련 kafka-server.service 파일에 다음 설정 추가
+
+```
+EnvironmentFile=[kafka설치디렉토리]/config/jmx
+```
 
 
 

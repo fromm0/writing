@@ -18,7 +18,7 @@
 tickTime=2000
 initLimit=10
 syncLimit=5
-dataDir=/home1/irteam/data
+dataDir=/data
 clientPort=2181
 server.1=dev-dongguk-zk001-ncl:2888:3888
 server.2=dev-dongguk-zk002-ncl:2888:3888
@@ -37,11 +37,11 @@ Type=forking
 User=irteam
 Group=irteam
 SyslogIdentifier=zookeeper-server
-WorkingDirectory=/home1/irteam/apps/zookeeper
+WorkingDirectory=[zookeeper설치디렉토리]
 Restart=always
 RestartSec=0s
-ExecStart=/home1/irteam/apps/zookeeper/bin/zkServer.sh start
-ExecStop=/home1/irteam/apps/zookeeper/bin/zkServer.sh stop
+ExecStart=[zookeeper설치디렉토리]/bin/zkServer.sh start
+ExecStop=[zookeeper설치디렉토리]/bin/zkServer.sh stop
 
 [Install]
 WantedBy=multi-user.target
@@ -76,11 +76,11 @@ Type=simple
 User=irteam
 Group=irteam
 SyslogIdentifier=kafka-server
-WorkingDirectory=/home1/irteam/apps/kafka
+WorkingDirectory=[kafka설치디렉토리]
 Restart=always
 RestartSec=0s
-ExecStart=/home1/irteam/apps/kafka/bin/kafka-server-start.sh /home1/irteam/apps/kafka/config/server.properties
-ExecStop=/home1/irteam/apps/kafka/bin/kafka-server-stop.sh
+ExecStart=[kafka설치디렉토리]/bin/kafka-server-start.sh [kafka설치디렉토리]/config/server.properties
+ExecStop=[kafka설치디렉토리]/bin/kafka-server-stop.sh
 
 [Install]
 WantedBy=multi-user.target
