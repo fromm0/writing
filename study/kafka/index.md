@@ -9,3 +9,4 @@
 1. [4장 : 카프카 프로듀서](https://fromm0.github.io/writing/study/kafka/onlybook_kafka_2018_ch4)
 1. [5장 : 카프카 컨슈머](https://fromm0.github.io/writing/study/kafka/onlybook_kafka_2018_ch5)
 1. [6장 : 카프카 운영 가이드](https://fromm0.github.io/writing/study/kafka/onlybook_kafka_2018_ch6)
+1. [7장 : 카프카를 활용한 데이터 파이프라인 구축](https://fromm0.github.io/writing/study/kafka/onlybook_kafka_2018_ch7)

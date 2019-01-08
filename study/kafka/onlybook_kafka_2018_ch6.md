@@ -374,31 +374,3 @@ EnvironmentFile=[kafka설치디렉토리]/config/jmx
 
 # 6.6. 카프카 운영에 대한 Q&A 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
