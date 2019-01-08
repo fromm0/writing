@@ -354,8 +354,25 @@ JMX_PORT=9999
 EnvironmentFile=[kafka설치디렉토리]/config/jmx
 ```
 
+## 6.4.2. JMX  모니터링 지표
 
+# 6.5. 카프카 매니저 활용
 
+## 6.5.1. 카프카 매니저 설치
+
+## 6.5.2. 카프카 클러스터 등록
+
+## 6.5.3. 카프카 매니저 메뉴
+
+- Brokers
+- Topic
+- Preferred Replica Election
+- Reassign Partitions
+- Consumers
+- Cluster Information
+- Cluster Summary
+
+# 6.6. 카프카 운영에 대한 Q&A 
 
 
 
