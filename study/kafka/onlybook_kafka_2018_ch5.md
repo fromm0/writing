@@ -15,10 +15,12 @@
     - 컨슈머가 속한 컨슈머 그룹 식별자
   - enable.auto.commit
     - 백그라운드로 주기적으로 오프셋을 커밋
+    - true일 경우 auto.commit.interval.ms 값을 설정해서 오프셋을 자동으로 커밋하는 시간간격을 조정가능 (기본은 5초) 
+    - false일 경우 개발자가 제어해야 하며 commitSync / commitAsync 메소드를 사용
   - auto.offset.reset
     - 카프카에서 초기 오프셋이 없거나 현재 오프셋이 더 이상 존재하지 않은 경우 다음 옵션으로 리셋
       - earliest : 가장 초기의 오프셋값으로 설정
-      - latest : 가장 마지막의 오프셋값으로 설정
+      - latest : 가장 마지막의 오프셋값으로 설정(기본값)
       - none : 이전 오프셋값을 찾지 못하면 에러
   - fetch.max.bytes
     - 한번에 가져올수 있는 최대 데이터 크기
@@ -41,6 +43,13 @@
     - 주기적으로 오프셋을 커밋하는 시간
   - fetch.max.wait.ms
     - fetch.min.bytes 에 의해 설정된 데이터보다 적은 경우 요청에 응답을 기다리는 최대 시간
+  - partition.assignment.strategy
+    - 토픽의 파티션을 각 컨슈머에 할당하는 방법을 정의한다.
+    - 기본적으로 제공하는 아래 두가지 구현체를 사용할수도 있고 별도 구현체를 정의해서 사용도 가능 
+      - org.apache.kafka.clients.consumer.RangeAssignor 
+      - org.apache.kafka.clients.consumer.RoundRobinAssignor
+  - client.id
+    - 메시지를 식별하기 위해 브로커가 사용
 
 # 5.2. 콘솔 컨슈머로 메시지 가져오기
 컨슈머는 토픽에서 메시지를 가져옴
@@ -398,6 +407,7 @@ public class KafkaBookConsumerMO {
       try {
         // 메시지를 모두 가져와서 처리 후 commitSync를 호출해서 커밋
         consumer.commitSync();
+        //consumer.commitAsync();
       } catch (CommitFailedException e) {
         System.out.printf("commit failed", e);
       }
@@ -451,6 +461,7 @@ public class KafkaBookConsumerPart {
       }
       try {
         consumer.commitSync();
+        //consumer.commitAsync();
       } catch (CommitFailedException e) {
         System.out.printf("commit failed", e);
       }
