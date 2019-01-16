@@ -352,6 +352,32 @@ public class KafkaBookConsumer1 {
 - 그림 5-9는 하나의 토픽을 두개 이상의 컨슈머 그룹이 메시지를 가져가는 형태로 활용하는 모습
   - 컨슈머 그룹마다 각자의 오프셋을 별도로 관리하기 때문에 가능
   - 컨슈머 그룹 아이디는 중복되지 않도록 관리해야 함
+
+## 5.5.1. 독자실행 컨슈머
+
+- 하나의 컨슈머로 충분한 경우 컨슈머 그룹을 만들지 않고 사용
+  - 한 토픽의 모든 파티션을 한 컨슈머로 처리가 가능할 경우
+  - 하나의 특정 파티션 데이터를 항상 하나의 컨슈머가 처리할 경우
+- 컨슈머 그룹을 사용할 경우에는 구독(subscribe)을 하지만 독자실행할 경우 파티션을 할당(assign)해서 사용
+
+```
+List<PartitionInfo> partitionINfos = null;
+partitionInfos = consumer.partitionsFor("topic");
+
+if (partitonInfos != null) {
+  for (PartitionInfo partition : partitionInfos) {
+    partitions.add(
+      new TopicPartition(partition.topic(), partition.partition())
+    );
+  }
+}
+
+consumer.assign(partitions);
+
+while (true) {
+    ... 소비코드 
+}
+```
   
 # 5.6. 커밋과 오프셋
 
