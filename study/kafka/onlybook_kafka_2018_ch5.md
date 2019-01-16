@@ -11,19 +11,23 @@
   - fetch.min.bytes
     - 한번에 가져올수 있는 최소 데이터 크기
     - 지정한 크기보다 작다면 데이터를 누적해서 해당 크기만큼 기다림
+  - fetch.max.bytes
+    - 한번에 가져올수 있는 최대 데이터 크기
+  - fetch.max.wait.ms
+    - fetch.min.bytes 에 의해 설정된 데이터보다 적은 경우 요청에 응답을 기다리는 최대 시간
   - group.id
     - 컨슈머가 속한 컨슈머 그룹 식별자
   - enable.auto.commit
     - 백그라운드로 주기적으로 오프셋을 커밋
     - true일 경우 auto.commit.interval.ms 값을 설정해서 오프셋을 자동으로 커밋하는 시간간격을 조정가능 (기본은 5초) 
     - false일 경우 개발자가 제어해야 하며 commitSync / commitAsync 메소드를 사용
+  - auto.commit.interval.ms
+    - 주기적으로 오프셋을 커밋하는 시간
   - auto.offset.reset
     - 카프카에서 초기 오프셋이 없거나 현재 오프셋이 더 이상 존재하지 않은 경우 다음 옵션으로 리셋
       - earliest : 가장 초기의 오프셋값으로 설정
       - latest : 가장 마지막의 오프셋값으로 설정(기본값)
       - none : 이전 오프셋값을 찾지 못하면 에러
-  - fetch.max.bytes
-    - 한번에 가져올수 있는 최대 데이터 크기
   - request.timeout.ms
     - 요청에 대해 응답을 기다리는 최대 시간
   - session.timeout.ms
@@ -37,12 +41,7 @@
     - 단일 호출 poll()에 대한 최대 레코드 수를 조정
     - 애플리케이션이 폴링 루프에서 데이터 양을 조정가능
   - max.poll.interval.ms
-    - 데이터는 가져가지 않고 하트비트만 보내는지 체크
-    - 주기적으로 poll을 호출하는지 체크해서 장애 체크
-  - auto.commit.interval.ms
-    - 주기적으로 오프셋을 커밋하는 시간
-  - fetch.max.wait.ms
-    - fetch.min.bytes 에 의해 설정된 데이터보다 적은 경우 요청에 응답을 기다리는 최대 시간
+    - 데이터는 가져가지 않고 하트비트만 보내는지 체크하기 위해 poll을 호출하는지 체크해서 장애 체크
   - partition.assignment.strategy
     - 토픽의 파티션을 각 컨슈머에 할당하는 방법을 정의한다.
     - 기본적으로 제공하는 아래 두가지 구현체를 사용할수도 있고 별도 구현체를 정의해서 사용도 가능 
@@ -55,11 +54,14 @@
 컨슈머는 토픽에서 메시지를 가져옴
 
 ```
-./kafka-consumer-groups.sh --bootstrap-server dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 --list
-```
+./kafka-console-consumer.sh \
+--bootstrap-server dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 \
+--topic dongguk-topic \
+--group dongguk-consumer-group \
+--from-beginning
 
-```
-./kafka-console-consumer.sh --bootstrap-server dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 --topic dongguk-topic --group dongguk-consumer-group --from-beginning
+# 출력결과 (책 4장에서 보낸 메시지)
+# hello 
 ```
 
 # 5.3. 자바와 파이썬을 이용한 컨슈머
@@ -169,12 +171,15 @@ public class KafkaBookConsumer1 {
 > [Kafka 운영자가 말하는 처음 접하는 Kafka](https://www.popit.kr/kafka-%EC%9A%B4%EC%98%81%EC%9E%90%EA%B0%80-%EB%A7%90%ED%95%98%EB%8A%94-%EC%B2%98%EC%9D%8C-%EC%A0%91%ED%95%98%EB%8A%94-kafka/) 참고
 > - "파티션 수에 따른 메시지 순서" 절에도 동일한 설명이 있음
 
-- 리플리케이션 팩터는 다르게 설정해도 되지만 파티션 수는 동일하게 토픽 생성해야 함
-
 #### 테스트로 사용할 토픽을 만들어보자
 
 ```
-./kafka-topics.sh --zookeeper dev-dongguk-zk001-ncl:2181,dev-dongguk-zk002-ncl:2181,dev-dongguk-zk003-ncl:2181/dongguk-kafka --topic dongguk-01 --partitions 3 --replication-factor 1 --create
+./kafka-topics.sh \
+--zookeeper dev-dongguk-zk001-ncl:2181,dev-dongguk-zk002-ncl:2181,dev-dongguk-zk003-ncl:2181/dongguk-kafka \
+--topic dongguk-01 \
+--partitions 3 \
+--replication-factor 1 \
+--create
 
 # 출력결과
 # Created topic "dongguk-01".
@@ -189,7 +194,9 @@ public class KafkaBookConsumer1 {
 #### dongguk-01토픽을 메시지를 보내보자
 
 ```
-./kafka-console-producer.sh --broker-list dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 --topic dongguk-01
+./kafka-console-producer.sh \
+--broker-list dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 \
+--topic dongguk-01
 
 # 출력결과
 # > a
@@ -200,7 +207,10 @@ public class KafkaBookConsumer1 {
 #### dongguk-01토픽에 보낸 메시지를 받아보자. 
 
 ```
-./kafka-console-consumer.sh --bootstrap-server dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 --topic dongguk-01 --from-beginning
+./kafka-console-consumer.sh \
+--bootstrap-server dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 \
+--topic dongguk-01 \
+--from-beginning
 
 # 출력결과
 # a
@@ -217,7 +227,11 @@ public class KafkaBookConsumer1 {
 - kafka-console-consumer.sh명령어에 --partition파라미터를 추가하면 파티션별 메시지를 확인할수 있음 
 
 ```
-./kafka-console-consumer.sh --bootstrap-server dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 --topic dongguk-01 --partition 0 --from-beginning
+./kafka-console-consumer.sh \
+--bootstrap-server dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 \
+--topic dongguk-01 \
+--partition 0 \
+--from-beginning
 
 # 출력결과
 # c
@@ -229,7 +243,11 @@ public class KafkaBookConsumer1 {
 ```
 
 ```
-./kafka-console-consumer.sh --bootstrap-server dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 --topic dongguk-01 --partition 1 --from-beginning
+./kafka-console-consumer.sh \
+--bootstrap-server dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 \
+--topic dongguk-01 \
+--partition 1 \
+--from-beginning
 
 # 출력결과
 # b
@@ -242,7 +260,11 @@ public class KafkaBookConsumer1 {
 ```
 
 ```
-./kafka-console-consumer.sh --bootstrap-server dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 --topic dongguk-01 --partition 2 --from-beginning
+./kafka-console-consumer.sh \
+--bootstrap-server dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 \
+--topic dongguk-01 \
+--partition 2 \
+--from-beginning
 
 # 출력결과
 # a
@@ -261,14 +283,21 @@ public class KafkaBookConsumer1 {
 메시지 순서를 정확히 보장하기 위해서는 파티션 수를 1로 지정해서 사용해야 함
 
 ```
-./kafka-topics.sh --zookeeper dev-dongguk-zk001-ncl:2181,dev-dongguk-zk002-ncl:2181,dev-dongguk-zk003-ncl:2181/dongguk-kafka --topic dongguk-02 --partitions 1 --replication-factor 1 --create
+./kafka-topics.sh \
+--zookeeper dev-dongguk-zk001-ncl:2181,dev-dongguk-zk002-ncl:2181,dev-dongguk-zk003-ncl:2181/dongguk-kafka \
+--topic dongguk-02 \
+--partitions 1 \
+--replication-factor 1 \
+--create
 
 # 출력결과
 # Created topic "dongguk-02".
 ```
 
 ```
-./kafka-console-producer.sh --broker-list dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 --topic dongguk-02
+./kafka-console-producer.sh \
+--broker-list dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 \
+--topic dongguk-02
 
 # 출력결과
 # > a
@@ -277,7 +306,10 @@ public class KafkaBookConsumer1 {
 ```
 
 ```
-./kafka-console-consumer.sh --bootstrap-server dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 --topic dongguk-02 --from-beginning
+./kafka-console-consumer.sh \
+--bootstrap-server dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 \
+--topic dongguk-02 \
+--from-beginning
 
 # 출력결과
 # a
@@ -290,7 +322,11 @@ public class KafkaBookConsumer1 {
 - 파티션 3인 dongguk-01 의 결과와 달리 메시지가 순서대로 출력됨
 
 ```
-./kafka-console-consumer.sh --bootstrap-server dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 --topic dongguk-02 --partition 0 --from-beginning
+./kafka-console-consumer.sh \
+--bootstrap-server dev-dongguk-zk001-ncl:9092,dev-dongguk-zk002-ncl:9092,dev-dongguk-zk003-ncl:9092 \
+--topic dongguk-02 \
+--partition 0 \
+--from-beginning
 
 # 출력결과
 # a
