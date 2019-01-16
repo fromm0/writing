@@ -493,17 +493,3 @@ while (true) {
 # 참고자료
 
 [Kafka 운영자가 말하는 Kafka Consumer Group](https://www.popit.kr/kafka-consumer-group/)
-
-
-# 메모
-
-토픽 목록과 토픽별 파티션 수
-- 파티션 웹 콘솔등에서 확인가능
-
-컨슈머 그룹 목록과 컨슈머 그룹별 컨슈머 수
-- 컨슈머그룹목록 
-  - bin/kafka-consumer-groups.sh  --list --bootstrap-server localhost:9092
-  - bin/kafka-consumer-groups.sh --describe --group mygroup --bootstrap-server localhost:9092
-- 
-
-
