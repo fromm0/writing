@@ -32,3 +32,5 @@ public class CommunityApplication {
 
 - run application 명령으로 실행
 - http://localhost:8080/ 접속 후 결과 확인
+
+# 인텔리제이 상용버전에서 Spring Initializer를 사용해서 프로젝트 생성
