@@ -47,7 +47,7 @@ public class CommunityApplication {
 server.port: 80
 ```
 
-- 프로파일에 따른 환경 구성 분리
+## 프로파일에 따른 환경 구성 분리
 
 ```application.yml
 server:
@@ -68,10 +68,26 @@ server:
 java -jar ... -D spring.profiles.active=dev
 ```
 
-- YAML 파일 매핑하기
+## YAML 파일 매핑하기
+
+기능 | @Value | @configurationProperties
+유연한 바인딩 | X | O
+메타데이터 지원 | X | O
+SpEL평가 | O | X
+
+유연한 바인딩 : 필드는 낙타표기법으로 선언, 프로퍼티의 키는 다양한 형식(낙타표기법, 케밥표기법, 언더바표기법 등) 으로 선언해서 바인딩
+메타데이터 지원 : 프로퍼티의 키에 대한 정보를 메타데이터 파일(JSON)로 제공
+SpEL평가
 
 
+### @Value 살펴보기
 
-
+```
+property:
+    test:
+        name: property depth test
+propertyTest: test
+propertyTestList: a,b,c
+```
 
 
