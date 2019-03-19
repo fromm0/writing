@@ -90,4 +90,26 @@ propertyTest: test
 propertyTestList: a,b,c
 ```
 
+# 자동 환경 설정 이해하기
 
+- Web, H2, JDBC를 비롯한 100여개의 자동설정을 제공함
+- @EnableAutoConfiguration (또는 @SpringBootApplication)
+    - @EnableAutoConfiguration 는 @Configuration과 함께 사용해야함
+
+## 자동 환경 설정 애노테이션
+
+- @SpringBootApplication = @SpringBootConfiguration + @EnableAutoconfiguration + @ComponentScan
+
+## @EnableAutoConfiguration 살펴보기
+
+- META-INF/spring.factories : 자동 설정 대상 클래스 목록
+- META-INF/spring-configuration-metadata.json : 자동 설정에 사용할 프로퍼티 정의 파일
+- org/springframework/boot/autoconfigure : 미리 구현해놓은 자동설정 목록
+
+https://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
+
+## 자동 설정 애노테이션 살펴보기
+
+조건 애노테이션 | 적용 조건
+@ConditionalOnBean | 해당하는 빈 클래스나 이름이 미리 빈 팩토리에 포함되어 있을 경우
+@ConditionalOnClass | 해당하는 클래스가 클래스 경로에 있을 경우
